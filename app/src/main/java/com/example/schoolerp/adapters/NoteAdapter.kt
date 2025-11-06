@@ -5,8 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.schoolerp.databinding.ItemNoteBinding
 import com.example.schoolerp.models.Note
-import java.text.SimpleDateFormat
-import java.util.*
 
 class NoteAdapter(
     private val notes: List<Note>,
@@ -30,7 +28,6 @@ class NoteAdapter(
             tvNoteSubject.text = note.subject
             tvFileName.text = note.fileName
             tvUploadedBy.text = "By: ${note.uploadedByName}"
-            tvTimestamp.text = formatDate(note.timestamp)
 
             btnDownload.setOnClickListener {
                 onDownloadClick(note)
@@ -39,9 +36,4 @@ class NoteAdapter(
     }
 
     override fun getItemCount() = notes.size
-
-    private fun formatDate(timestamp: Long): String {
-        val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-        return sdf.format(Date(timestamp))
-    }
 }

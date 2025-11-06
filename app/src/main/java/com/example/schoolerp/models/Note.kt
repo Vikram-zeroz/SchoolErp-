@@ -7,6 +7,5 @@ data class Note(
     val fileUrl: String = "",
     val fileName: String = "",
     val uploadedBy: String = "",
-    val uploadedByName: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val uploadedByName: String = ""
 )

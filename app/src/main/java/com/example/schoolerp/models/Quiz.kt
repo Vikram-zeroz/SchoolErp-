@@ -5,8 +5,7 @@ data class Quiz(
     val title: String = "",
     val subject: String = "",
     val questions: List<Question> = listOf(),
-    val createdBy: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val createdBy: String = ""
 )
 
 data class Question(
@@ -20,6 +19,5 @@ data class QuizResult(
     val studentId: String = "",
     val studentName: String = "",
     val score: Int = 0,
-    val totalQuestions: Int = 0,
-    val timestamp: Long = System.currentTimeMillis()
+    val totalQuestions: Int = 0
 )

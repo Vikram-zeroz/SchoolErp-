@@ -47,13 +47,15 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
+    implementation(platform(libs.firebase.bom))
     // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+    implementation("com.google.firebase:firebase-firestore") // This now includes the KTX functionality
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-analytics")
+    // REMOVE THE LINE BELOW
+    // implementation("com.google.firebase:firebase-firestore-ktx")
 
     // UI Components
     implementation("androidx.cardview:cardview:1.0.0")
@@ -63,3 +65,4 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
     implementation(libs.firebase.database)
 }
+

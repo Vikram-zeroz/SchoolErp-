@@ -5,8 +5,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.schoolerp.databinding.ItemNoticeBinding
 import com.example.schoolerp.models.Notice
-import java.text.SimpleDateFormat
-import java.util.*
 
 class NoticeAdapter(private val notices: List<Notice>) :
     RecyclerView.Adapter<NoticeAdapter.NoticeViewHolder>() {
@@ -27,14 +25,8 @@ class NoticeAdapter(private val notices: List<Notice>) :
             tvNoticeTitle.text = notice.title
             tvNoticeContent.text = notice.content
             tvUploadedBy.text = "By: ${notice.uploadedByName}"
-            tvTimestamp.text = formatDate(notice.timestamp)
         }
     }
 
     override fun getItemCount() = notices.size
-
-    private fun formatDate(timestamp: Long): String {
-        val sdf = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
-        return sdf.format(Date(timestamp))
-    }
 }

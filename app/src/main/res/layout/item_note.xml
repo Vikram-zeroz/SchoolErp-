@@ -48,30 +48,14 @@
             android:layout_marginTop="12dp"
             android:gravity="center_vertical">
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvUploadedBy"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvUploadedBy"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="By: Teacher Name"
-                    android:textSize="12sp"
-                    android:textColor="@android:color/darker_gray" />
-
-                <TextView
-                    android:id="@+id/tvTimestamp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="2 hours ago"
-                    android:textSize="12sp"
-                    android:layout_marginTop="2dp"
-                    android:textColor="@android:color/darker_gray" />
-
-            </LinearLayout>
+                android:text="By: Teacher Name"
+                android:textSize="12sp"
+                android:textColor="@android:color/darker_gray" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnDownload"

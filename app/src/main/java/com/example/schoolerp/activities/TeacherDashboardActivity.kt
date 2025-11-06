@@ -75,7 +75,6 @@ class TeacherDashboardActivity : AppCompatActivity() {
 
     private fun loadNotices() {
         FirebaseHelper.firestore.collection("notices")
-            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) return@addSnapshotListener
 
@@ -89,7 +88,6 @@ class TeacherDashboardActivity : AppCompatActivity() {
 
     private fun loadNotes() {
         FirebaseHelper.firestore.collection("notes")
-            .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, e ->
                 if (e != null) return@addSnapshotListener
 
