@@ -33,5 +33,26 @@
             android:layout_height="wrap_content"
             android:inputType="text" />
     </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Link (URL)">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNoteLink"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textUri"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Description">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etNoteDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textMultiLine"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

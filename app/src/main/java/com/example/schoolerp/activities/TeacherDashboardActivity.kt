@@ -25,19 +25,9 @@ class TeacherDashboardActivity : AppCompatActivity() {
     private lateinit var noteAdapter: NoteAdapter
     private val notices = mutableListOf<Notice>()
     private val notes = mutableListOf<Note>()
-    private var selectedFileUri: Uri? = null
 
-    // Date formatter
-    private val dateFormat = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-
-    private val filePickerLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            selectedFileUri = result.data?.data
-            showUploadNoteDialog()
-        }
-    }
+    private val dateFormatNotice = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+    private val dateFormatNote = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +43,7 @@ class TeacherDashboardActivity : AppCompatActivity() {
         }
 
         binding.fabUploadNote.setOnClickListener {
-            pickFile()
+            showUploadNoteDialog()
         }
 
         binding.btnLogout.setOnClickListener {
@@ -64,7 +54,6 @@ class TeacherDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        // Pass delete callback to NoticeAdapter
         noticeAdapter = NoticeAdapter(notices) { notice ->
             showDeleteConfirmationDialog(notice)
         }
@@ -141,8 +130,7 @@ class TeacherDashboardActivity : AppCompatActivity() {
             .addOnSuccessListener { doc ->
                 val teacherName = doc.getString("name") ?: "Teacher"
 
-                // Get current date as formatted string
-                val currentDate = dateFormat.format(Date())
+                val currentDate = dateFormatNotice.format(Date())
 
                 val notice = Notice(
                     id = UUID.randomUUID().toString(),
@@ -180,7 +168,6 @@ class TeacherDashboardActivity : AppCompatActivity() {
     private fun deleteNotice(notice: Notice) {
         val currentUser = FirebaseHelper.getCurrentUser()
 
-        // Only allow the uploader to delete
         if (currentUser?.uid != notice.uploadedBy) {
             Toast.makeText(this, "You can only delete your own notices", Toast.LENGTH_SHORT).show()
             return
@@ -198,64 +185,50 @@ class TeacherDashboardActivity : AppCompatActivity() {
             }
     }
 
-    private fun pickFile() {
-        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
-            type = "*/*"
-            addCategory(Intent.CATEGORY_OPENABLE)
-        }
-        filePickerLauncher.launch(intent)
-    }
-
     private fun showUploadNoteDialog() {
         val dialogView =
             layoutInflater.inflate(com.example.schoolerp.R.layout.dialog_upload_note, null)
         val etTitle =
             dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteTitle)
-        val etSubject =
-            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteSubject)
+        val etLink =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteLink)
+        val etDescription =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteDescription)
 
         AlertDialog.Builder(this)
-            .setTitle("Upload Note")
+            .setTitle("Upload Note Link")
             .setView(dialogView)
             .setPositiveButton("Upload") { _, _ ->
                 val title = etTitle.text.toString()
-                val subject = etSubject.text.toString()
-                uploadNote(title, subject)
+                val link = etLink.text.toString()
+                val description = etDescription.text.toString()
+
+                if (title.isBlank() || link.isBlank() || description.isBlank()) {
+                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
+                uploadNote(title, link, description)
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun uploadNote(title: String, subject: String) {
-        val fileUri = selectedFileUri ?: return
-        val fileName = getFileName(fileUri)
+    private fun uploadNote(title: String, link: String, description: String) {
         val currentUser = FirebaseHelper.getCurrentUser() ?: return
 
-        val storageRef = FirebaseHelper.storage.reference
-            .child("notes/${UUID.randomUUID()}_$fileName")
-
-        storageRef.putFile(fileUri)
-            .addOnSuccessListener {
-                storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    saveNoteToFirestore(
-                        title,
-                        subject,
-                        downloadUri.toString(),
-                        fileName,
-                        currentUser.uid
-                    )
-                }
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(this, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        saveNoteToFirestore(
+            title,
+            description,
+            link,
+            currentUser.uid
+        )
     }
 
     private fun saveNoteToFirestore(
         title: String,
-        subject: String,
+        description: String,
         fileUrl: String,
-        fileName: String,
         teacherId: String
     ) {
         FirebaseHelper.firestore.collection("users")
@@ -264,12 +237,14 @@ class TeacherDashboardActivity : AppCompatActivity() {
             .addOnSuccessListener { doc ->
                 val teacherName = doc.getString("name") ?: "Teacher"
 
+                val currentDate = dateFormatNote.format(Date())
+
                 val note = Note(
                     id = UUID.randomUUID().toString(),
                     title = title,
-                    subject = subject,
+                    description = description,
                     fileUrl = fileUrl,
-                    fileName = fileName,
+                    date = currentDate,
                     uploadedBy = teacherId,
                     uploadedByName = teacherName
                 )
@@ -285,16 +260,5 @@ class TeacherDashboardActivity : AppCompatActivity() {
                         Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             }
-    }
-
-    private fun getFileName(uri: Uri): String {
-        var result = "file"
-        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val index = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
-                if (index >= 0) result = cursor.getString(index)
-            }
-        }
-        return result
     }
 }

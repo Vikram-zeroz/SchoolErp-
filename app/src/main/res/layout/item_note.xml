@@ -24,22 +24,20 @@
             android:textColor="@android:color/black" />
 
         <TextView
-            android:id="@+id/tvNoteSubject"
+            android:id="@+id/tvNoteDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Subject"
+            android:text="Description goes here..."
             android:textSize="14sp"
             android:layout_marginTop="4dp"
-            android:textColor="@color/purple_500" />
-
-        <TextView
-            android:id="@+id/tvFileName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="filename.pdf"
-            android:textSize="13sp"
-            android:layout_marginTop="8dp"
-            android:textColor="@android:color/darker_gray" />
+            android:textColor="@android:color/black" /> <TextView
+        android:id="@+id/tvNoteDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Date: MMM dd, yyyy"
+        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:textColor="@android:color/darker_gray" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,12 +56,13 @@
                 android:textColor="@android:color/darker_gray" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDownload"
+                android:id="@+id/btnViewLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Download"
+                android:text="View Link"
                 android:textSize="12sp"
-                app:icon="@drawable/ic_download"
+
+                app:icon="@drawable/ic_open_in_browser"
                 app:iconSize="18dp" />
 
         </LinearLayout>

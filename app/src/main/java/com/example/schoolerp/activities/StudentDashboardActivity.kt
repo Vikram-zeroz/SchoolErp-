@@ -1,11 +1,8 @@
 package com.example.schoolerp.activities
 
-import android.app.DownloadManager
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -15,6 +12,7 @@ import com.example.schoolerp.databinding.ActivityStudentDashboardBinding
 import com.example.schoolerp.models.Note
 import com.example.schoolerp.models.Notice
 import com.example.schoolerp.utils.FirebaseHelper
+import java.lang.Exception
 
 class StudentDashboardActivity : AppCompatActivity() {
     private lateinit var binding: ActivityStudentDashboardBinding
@@ -51,7 +49,7 @@ class StudentDashboardActivity : AppCompatActivity() {
         }
 
         noteAdapter = NoteAdapter(notes) { note ->
-            downloadNote(note)
+            viewNoteLink(note)
         }
         binding.rvNotes.apply {
             layoutManager = LinearLayoutManager(this@StudentDashboardActivity)
@@ -85,17 +83,12 @@ class StudentDashboardActivity : AppCompatActivity() {
             }
     }
 
-    private fun downloadNote(note: Note) {
-        val request = DownloadManager.Request(Uri.parse(note.fileUrl))
-            .setTitle(note.title)
-            .setDescription("Downloading ${note.fileName}")
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, note.fileName)
-            .setAllowedOverMetered(true)
-            .setAllowedOverRoaming(true)
-
-        val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        downloadManager.enqueue(request)
-        Toast.makeText(this, "Downloading ${note.fileName}", Toast.LENGTH_SHORT).show()
+    private fun viewNoteLink(note: Note) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(note.fileUrl))
+            startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(this, "Could not open link: Invalid URL or no browser app installed.", Toast.LENGTH_LONG).show()
+        }
     }
 }
