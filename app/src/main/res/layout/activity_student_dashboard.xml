@@ -16,6 +16,19 @@
             app:title="Student Dashboard"
             app:titleTextColor="@android:color/white">
 
+            <!-- Add Profile Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnProfile"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Profile"
+                android:layout_gravity="end"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:textColor="@android:color/white"
+                app:icon="@drawable/ic_person"
+                app:iconTint="@android:color/white" />
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="wrap_content"

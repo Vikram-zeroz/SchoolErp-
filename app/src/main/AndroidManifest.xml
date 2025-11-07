@@ -8,7 +8,7 @@
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
-        android:label="School ERP"
+        android:label="EduConnect"
         android:theme="@style/Theme.SchoolERP"
         android:usesCleartextTraffic="true">
 
@@ -25,6 +25,7 @@
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.StudentDashboardActivity" />
         <activity android:name=".activities.TeacherDashboardActivity" />
+        <activity android:name=".activities.StudentProfileActivity" />
     </application>
 
 </manifest>

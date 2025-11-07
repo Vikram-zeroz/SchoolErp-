@@ -16,6 +16,7 @@ import com.example.schoolerp.models.Note
 import com.example.schoolerp.models.Notice
 import com.example.schoolerp.utils.FirebaseHelper
 import com.google.android.material.textfield.TextInputEditText
+import java.text.SimpleDateFormat
 import java.util.*
 
 class TeacherDashboardActivity : AppCompatActivity() {
@@ -25,6 +26,9 @@ class TeacherDashboardActivity : AppCompatActivity() {
     private val notices = mutableListOf<Notice>()
     private val notes = mutableListOf<Note>()
     private var selectedFileUri: Uri? = null
+
+    // Date formatter
+    private val dateFormat = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
 
     private val filePickerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -60,7 +64,10 @@ class TeacherDashboardActivity : AppCompatActivity() {
     }
 
     private fun setupRecyclerViews() {
-        noticeAdapter = NoticeAdapter(notices)
+        // Pass delete callback to NoticeAdapter
+        noticeAdapter = NoticeAdapter(notices) { notice ->
+            showDeleteConfirmationDialog(notice)
+        }
         binding.rvNotices.apply {
             layoutManager = LinearLayoutManager(this@TeacherDashboardActivity)
             adapter = noticeAdapter
@@ -100,9 +107,12 @@ class TeacherDashboardActivity : AppCompatActivity() {
     }
 
     private fun showUploadNoticeDialog() {
-        val dialogView = layoutInflater.inflate(com.example.schoolerp.R.layout.dialog_upload_notice, null)
-        val etTitle = dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoticeTitle)
-        val etContent = dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoticeContent)
+        val dialogView =
+            layoutInflater.inflate(com.example.schoolerp.R.layout.dialog_upload_notice, null)
+        val etTitle =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoticeTitle)
+        val etContent =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoticeContent)
 
         AlertDialog.Builder(this)
             .setTitle("Upload Notice")
@@ -110,6 +120,12 @@ class TeacherDashboardActivity : AppCompatActivity() {
             .setPositiveButton("Upload") { _, _ ->
                 val title = etTitle.text.toString()
                 val content = etContent.text.toString()
+
+                if (title.isBlank() || content.isBlank()) {
+                    Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+
                 uploadNotice(title, content)
             }
             .setNegativeButton("Cancel", null)
@@ -125,23 +141,60 @@ class TeacherDashboardActivity : AppCompatActivity() {
             .addOnSuccessListener { doc ->
                 val teacherName = doc.getString("name") ?: "Teacher"
 
+                // Get current date as formatted string
+                val currentDate = dateFormat.format(Date())
+
                 val notice = Notice(
                     id = UUID.randomUUID().toString(),
                     title = title,
                     content = content,
                     uploadedBy = currentUser.uid,
-                    uploadedByName = teacherName
+                    uploadedByName = teacherName,
+                    date = currentDate
                 )
 
                 FirebaseHelper.firestore.collection("notices")
                     .document(notice.id)
                     .set(notice)
                     .addOnSuccessListener {
-                        Toast.makeText(this, "Notice uploaded successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Notice uploaded successfully", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
+            }
+    }
+
+    private fun showDeleteConfirmationDialog(notice: Notice) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Notice")
+            .setMessage("Are you sure you want to delete \"${notice.title}\"?")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteNotice(notice)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteNotice(notice: Notice) {
+        val currentUser = FirebaseHelper.getCurrentUser()
+
+        // Only allow the uploader to delete
+        if (currentUser?.uid != notice.uploadedBy) {
+            Toast.makeText(this, "You can only delete your own notices", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        FirebaseHelper.firestore.collection("notices")
+            .document(notice.id)
+            .delete()
+            .addOnSuccessListener {
+                Toast.makeText(this, "Notice deleted successfully", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Error deleting notice: ${e.message}", Toast.LENGTH_SHORT)
+                    .show()
             }
     }
 
@@ -154,9 +207,12 @@ class TeacherDashboardActivity : AppCompatActivity() {
     }
 
     private fun showUploadNoteDialog() {
-        val dialogView = layoutInflater.inflate(com.example.schoolerp.R.layout.dialog_upload_note, null)
-        val etTitle = dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteTitle)
-        val etSubject = dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteSubject)
+        val dialogView =
+            layoutInflater.inflate(com.example.schoolerp.R.layout.dialog_upload_note, null)
+        val etTitle =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteTitle)
+        val etSubject =
+            dialogView.findViewById<TextInputEditText>(com.example.schoolerp.R.id.etNoteSubject)
 
         AlertDialog.Builder(this)
             .setTitle("Upload Note")
@@ -181,7 +237,13 @@ class TeacherDashboardActivity : AppCompatActivity() {
         storageRef.putFile(fileUri)
             .addOnSuccessListener {
                 storageRef.downloadUrl.addOnSuccessListener { downloadUri ->
-                    saveNoteToFirestore(title, subject, downloadUri.toString(), fileName, currentUser.uid)
+                    saveNoteToFirestore(
+                        title,
+                        subject,
+                        downloadUri.toString(),
+                        fileName,
+                        currentUser.uid
+                    )
                 }
             }
             .addOnFailureListener { e ->
@@ -189,7 +251,13 @@ class TeacherDashboardActivity : AppCompatActivity() {
             }
     }
 
-    private fun saveNoteToFirestore(title: String, subject: String, fileUrl: String, fileName: String, teacherId: String) {
+    private fun saveNoteToFirestore(
+        title: String,
+        subject: String,
+        fileUrl: String,
+        fileName: String,
+        teacherId: String
+    ) {
         FirebaseHelper.firestore.collection("users")
             .document(teacherId)
             .get()
@@ -210,7 +278,8 @@ class TeacherDashboardActivity : AppCompatActivity() {
                     .document(note.id)
                     .set(note)
                     .addOnSuccessListener {
-                        Toast.makeText(this, "Note uploaded successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Note uploaded successfully", Toast.LENGTH_SHORT)
+                            .show()
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()

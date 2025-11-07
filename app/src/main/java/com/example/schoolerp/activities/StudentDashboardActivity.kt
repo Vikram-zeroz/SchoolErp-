@@ -28,6 +28,10 @@ class StudentDashboardActivity : AppCompatActivity() {
         binding = ActivityStudentDashboardBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.btnProfile.setOnClickListener {
+            startActivity(Intent(this, StudentProfileActivity::class.java))
+        }
+
         setupRecyclerViews()
         loadNotices()
         loadNotes()
